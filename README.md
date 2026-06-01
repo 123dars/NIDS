@@ -99,6 +99,7 @@ python3 run.py logs
 - Color-coded severity: HIGH / MEDIUM / LOW / NORMAL
 - Recent packets table
 - Auto-refreshes every 5 seconds
+<img width="1910" height="750" alt="image" src="https://github.com/user-attachments/assets/72df18d3-5de2-46a0-b691-fe582384c278" />
 
 ---
 
