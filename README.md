@@ -3,7 +3,9 @@
 A real-time Network Intrusion Detection System built with Python, Scapy, Machine Learning, and Flask.
 Detects suspicious network activity using live packet sniffing, ML-based anomaly detection, and rule-based analysis — all visualized on a live web dashboard.
 
+> 📊 Captured and analysed **800+ live packets** | Detected **11 anomalies** | **94%** normal classification rate
 
+<img width="1910" height="750" alt="NIDS Dashboard" src="https://github.com/user-attachments/assets/8de91a19-2e4e-4ef8-9aae-3a28e161fc22" />
 
 ---
 
@@ -91,37 +93,32 @@ ip a
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start — Single Command
 
-### Option A — Run everything at once
 ```bash
-# Terminal 1 — Start packet capture (needs sudo)
-sudo nids-env/bin/python3 run.py sniff eth0
-
-# Wait 2-5 minutes, then Ctrl+C
-
-# Terminal 2 — Run anomaly detection
-nids-env/bin/python3 run.py detect
-
-# Terminal 3 — Start dashboard
-nids-env/bin/python3 run.py dashboard
-
-# Open browser → http://localhost:5000
+sudo nids-env/bin/python3 run.py all eth0
 ```
 
-### Option B — Run components individually
+This runs everything together — sniffer, anomaly detector (every 15 seconds), and dashboard all at once.
+
+Open browser → **http://localhost:5000**
+
+Browse any website to generate live traffic and watch the dashboard update automatically!
+
+### Run components individually (optional)
+
 ```bash
-# Capture packets
+# Capture packets only
 sudo nids-env/bin/python3 run.py sniff eth0
 
-# Detect anomalies
+# Run anomaly detection only
 nids-env/bin/python3 run.py detect
+
+# Start dashboard only
+nids-env/bin/python3 run.py dashboard
 
 # Parse Snort/Suricata logs
 nids-env/bin/python3 run.py logs
-
-# Start dashboard
-nids-env/bin/python3 run.py dashboard
 ```
 
 ---
@@ -136,8 +133,8 @@ nids-env/bin/python3 run.py dashboard
 | Active Alerts | Filterable table of suspicious packets with risk scores |
 | Protocol Breakdown | TCP / UDP / ICMP / Other percentage bars |
 | Top Source IPs | Most active IP addresses on your network |
-| Export CSV | Download all alerts as CSV with one click |
-| System Status | Sniffer, ML model, interface status |
+| Export CSV | Download all alerts as a CSV file with one click |
+| System Status | Sniffer, ML model, and interface status |
 
 ---
 
@@ -149,7 +146,7 @@ nids-env/bin/python3 run.py dashboard
 4. Packets with anomaly score > threshold are flagged
 5. **Rule-based checks** add flags for known suspicious ports
 6. **Risk score** (0–100) calculated for each flagged packet
-7. All results visible on live dashboard
+7. All results visible on live dashboard with auto-refresh
 
 ---
 
@@ -163,7 +160,6 @@ nids-env/bin/python3 run.py dashboard
 | 3389 | RDP | Remote access attacks |
 | 4444 | Metasploit | Common exploit payload |
 | 31337 | Back Orifice | Legacy trojan |
-<img width="1910" height="750" alt="image" src="https://github.com/user-attachments/assets/8de91a19-2e4e-4ef8-9aae-3a28e161fc22" />
 
 ---
 
