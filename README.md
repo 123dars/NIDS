@@ -3,7 +3,7 @@
 A real-time Network Intrusion Detection System built with Python, Scapy, Machine Learning, and Flask.
 Detects suspicious network activity using live packet sniffing, ML-based anomaly detection, and rule-based analysis — all visualized on a live web dashboard.
 
-![NIDS Dashboard](screenshot.png)
+
 
 ---
 
@@ -163,6 +163,7 @@ nids-env/bin/python3 run.py dashboard
 | 3389 | RDP | Remote access attacks |
 | 4444 | Metasploit | Common exploit payload |
 | 31337 | Back Orifice | Legacy trojan |
+<img width="1910" height="750" alt="image" src="https://github.com/user-attachments/assets/8de91a19-2e4e-4ef8-9aae-3a28e161fc22" />
 
 ---
 
