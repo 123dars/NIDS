@@ -5,7 +5,8 @@ Detects suspicious network activity using live packet sniffing, ML-based anomaly
 
 > 📊 Captured and analysed **800+ live packets** | Detected **11 anomalies** | **94%** normal classification rate
 
-<img width="1910" height="750" alt="NIDS Dashboard" src="https://github.com/user-attachments/assets/8de91a19-2e4e-4ef8-9aae-3a28e161fc22" />
+<img width="1919" height="745" alt="image" src="https://github.com/user-attachments/assets/9e7c5378-7fc7-4ba8-9df5-c8a40729878e" />
+
 
 ---
 
