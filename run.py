@@ -19,10 +19,10 @@ def run_detector():
         os.system("python3 ml/anomaly_detector.py")
 
 def run_dashboard():
-    print("[*] Starting web dashboard at http://localhost:5000 ...")
+    print(f"[*] Starting web dashboard at http://localhost:5000 ...")
     time.sleep(2)
     os.chdir("dashboard")
-    os.system("python3 app.py")
+    os.system(f"{sys.executable} app.py")
 
 def parse_snort_logs():
     print("[*] Parsing Snort/Suricata logs...")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     elif cmd == "demo":
         # Run simulator and dashboard in parallel threads
         threads = [
-            threading.Thread(target=lambda: os.system("python3 simulator.py"), daemon=True),
+            threading.Thread(target=lambda: os.system(f"{sys.executable} simulator.py"), daemon=True),
             threading.Thread(target=run_dashboard, daemon=True),
         ]
         for t in threads:
