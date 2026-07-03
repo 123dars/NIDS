@@ -4,6 +4,7 @@ A real-time Network Intrusion Detection System built with Python, Scapy, Machine
 Detects suspicious network activity using live packet sniffing, ML-based anomaly detection, and rule-based analysis — all visualized on a live web dashboard.
 
 > 📊 Captured and analysed **800+ live packets** | Detected **11 anomalies** | **94%** normal classification rate
+> 🌐 **[View Live Interactive Demo](https://my-nids-portfolio-demo.onrender.com)** (Powered by Simulation Mode)
 
 <img width="1919" height="745" alt="image" src="https://github.com/user-attachments/assets/9e7c5378-7fc7-4ba8-9df5-c8a40729878e" />
 
@@ -14,7 +15,11 @@ Detects suspicious network activity using live packet sniffing, ML-based anomaly
 
 - 📡 **Live Packet Capture** — Real-time network traffic capture using Scapy
 - 🤖 **ML Anomaly Detection** — Isolation Forest algorithm flags suspicious packets automatically
-- 🔍 **Rule-based Detection** — Flags known suspicious ports (22, 445, 4444, 31337 etc.)
+- 🌍 **Real-Time OSINT Threat Intel** — Enriches IP addresses with AbuseIPDB mock scores & GeoIP mapping
+- 🕸 **Live Network Topology Graph** — Interactive 2D visualization of network traffic and malicious nodes
+- 🛡 **MITRE ATT&CK Mapping** — Correlates port anomalies with industry-standard T-Codes (e.g. T1110)
+- 🚨 **Automated SecOps Alerts** — Webhook integration for real-time Slack/Teams incident notifications
+- ☁ **Cloud Simulation Mode** — Bypass raw-socket restrictions to deploy NIDS as an interactive web demo
 - 📊 **Live Dashboard** — Flask web dashboard with auto-refresh every 5 seconds
 - 🔎 **Filter & Search** — Filter alerts by IP, protocol, and severity in real time
 - ⬇ **Export CSV** — One-click download of all alerts
@@ -132,6 +137,9 @@ nids-env/bin/python3 run.py logs
 | Risk Cards | HIGH / MEDIUM / LOW / NORMAL breakdown |
 | Packet Rate Graph | Live chart of packets per second (last 60s) |
 | Active Alerts | Filterable table of suspicious packets with risk scores |
+| OSINT Intel | Real-time Abuse Confidence Scores & Country Code mapping |
+| MITRE ATT&CK | Maps triggered rules to MITRE Threat Tactics |
+| Network Graph | Interactive 2D vis-network topology of traffic |
 | Protocol Breakdown | TCP / UDP / ICMP / Other percentage bars |
 | Top Source IPs | Most active IP addresses on your network |
 | Export CSV | Download all alerts as a CSV file with one click |
