@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>NIDS — Network Intrusion Detection System</title>
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0d1117;font-family:'Courier New',monospace;color:#c9d1d9;min-height:100vh}
@@ -79,6 +80,7 @@ tr:hover td{background:#111c2b}
 /* Graph */
 .graph-wrap{position:relative;height:120px;margin-top:4px}
 canvas{width:100%!important}
+#network-graph{height: 250px; width: 100%; border-radius: 4px; background: #0d1117; border: 1px solid #131d2a;}
 
 /* Side */
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -163,6 +165,7 @@ footer{text-align:center;padding:16px;color:#2a4a6a;font-size:11px;border-top:1p
             <tr>
               <th onclick="sortTable('timestamp')">Timestamp ↕</th>
               <th onclick="sortTable('src_ip')">Source IP ↕</th>
+              <th>OSINT Intel</th>
               <th>Dest IP</th>
               <th>Protocol</th>
               <th onclick="sortTable('dst_port')">Port ↕</th>
@@ -216,6 +219,11 @@ footer{text-align:center;padding:16px;color:#2a4a6a;font-size:11px;border-top:1p
     </div>
 
     <div class="panel">
+      <div class="sec-title"><div class="sec-title-left"><div class="dot" style="background:#bc8cff"></div>Live Network Topology</div></div>
+      <div id="network-graph"></div>
+    </div>
+
+    <div class="panel">
       <div class="sec-title"><div class="sec-title-left"><div class="dot" style="background:#3fb950"></div>System status</div></div>
       <div class="status-row"><span style="color:#4a7fa8;font-size:11px">Sniffer</span><span style="color:#3fb950;font-size:11px">● Active</span></div>
       <div class="status-row"><span style="color:#4a7fa8;font-size:11px">ML Model</span><span style="color:#3fb950;font-size:11px">● Loaded</span></div>
@@ -236,8 +244,22 @@ let rateHistory=Array(60).fill(0);
 let prevTotal=0;
 let prevStats={};
 let chartCtx=null;
+let osintCache={};
+let network, networkNodes, networkEdges;
 
-function sevBadge(s){return`<span class="sev sev-${s||'LOW'}">${s||'LOW'}</span>`}
+function initNetwork() {
+  networkNodes = new vis.DataSet([]);
+  networkEdges = new vis.DataSet([]);
+  const container = document.getElementById('network-graph');
+  const data = { nodes: networkNodes, edges: networkEdges };
+  const options = {
+    nodes: { shape: 'dot', size: 10, font: { color: '#8b949e', size: 10, face: 'Courier New' }, borderWidth: 2 },
+    edges: { width: 1, color: { color: '#1e3a5f', opacity: 0.5 }, smooth: { type: 'continuous' } },
+    physics: { barnesHut: { gravitationalConstant: -2000, centralGravity: 0.3, springLength: 95 }, stabilization: false },
+    interaction: { zoomView: false }
+  };
+  network = new vis.Network(container, data, options);
+}
 function protoBadge(p){const k=p||'OTHER';return`<span class="proto proto-${k}">${k}</span>`}
 
 // ── Clock ──────────────────────────────────────────────────────────────────
@@ -324,17 +346,18 @@ function applyFilters(){
   document.getElementById('filter-count').textContent=`Showing ${filtered.length} of ${allAlerts.length}`;
   const tbody=document.getElementById('alerts-body');
   if(!filtered.length){
-    tbody.innerHTML=allAlerts.length?'<tr class="empty-row"><td colspan="7">No results match filter</td></tr>':'<tr class="empty-row"><td colspan="7">✓ No suspicious activity detected</td></tr>';
+    tbody.innerHTML=allAlerts.length?'<tr class="empty-row"><td colspan="8">No results match filter</td></tr>':'<tr class="empty-row"><td colspan="8">✓ No suspicious activity detected</td></tr>';
     return;
   }
   tbody.innerHTML=filtered.map(r=>`
     <tr>
       <td style="color:#8b949e">${r.timestamp||''}</td>
       <td style="color:#58a6ff">${r.src_ip||''}</td>
+      <td class="osint-cell" data-ip="${r.src_ip||''}">${renderOsint(r.src_ip||'')}</td>
       <td style="color:#8b949e">${r.dst_ip||''}</td>
       <td>${protoBadge(r.protocol)}</td>
       <td style="color:#c9d1d9">${r.dst_port||'—'}</td>
-      <td>${sevBadge(r.severity)}</td>
+      <td>${sevBadge(r.severity)}${renderMitre(r.dst_port, r.severity)}</td>
       <td style="color:#e3b341">${r.risk_score||''}</td>
     </tr>`).join('');
 }
@@ -349,6 +372,45 @@ function clearFilters(){
 function sortTable(key){
   if(sortKey===key)sortAsc=!sortAsc;else{sortKey=key;sortAsc=false;}
   applyFilters();
+}
+
+function renderMitre(port, sev) {
+  if (sev !== 'HIGH' && sev !== 'MEDIUM') return '';
+  const p = parseInt(port);
+  if (p === 22) return `<br><span class="threat-tag" style="margin-top:4px;background:#1a1040;color:#bc8cff;border-color:#3a2080;font-size:9px">MITRE T1110: Brute Force</span>`;
+  if (p === 445 || p === 3389 || p === 23) return `<br><span class="threat-tag" style="margin-top:4px;background:#1a1040;color:#bc8cff;border-color:#3a2080;font-size:9px">MITRE T1046: Service Discovery</span>`;
+  if (p === 4444 || p === 31337) return `<br><span class="threat-tag" style="margin-top:4px;background:#1a1040;color:#bc8cff;border-color:#3a2080;font-size:9px">MITRE T1059: Command & Control</span>`;
+  return `<br><span class="threat-tag" style="margin-top:4px;background:#1a1040;color:#bc8cff;border-color:#3a2080;font-size:9px">MITRE T1071: Standard App Layer</span>`;
+}
+
+// ── OSINT Integration ──────────────────────────────────────────────────────
+function renderOsint(ip) {
+  if (!ip) return '';
+  if (osintCache[ip] && osintCache[ip] !== 'fetching') {
+    const d = osintCache[ip];
+    if (d.abuseConfidenceScore > 50) return `<span class="threat-tag" style="background:#1a0808;color:#f85149;border-color:#4a1515;font-weight:bold">🔴 Abuse: ${d.abuseConfidenceScore}% (${d.countryCode})</span>`;
+    if (d.abuseConfidenceScore > 0) return `<span class="threat-tag amber">🟡 Suspicious (${d.countryCode})</span>`;
+    return `<span class="threat-tag" style="background:#081a08;color:#3fb950;border-color:#154a15">🟢 Clean (${d.countryCode})</span>`;
+  } else {
+    fetchOsint(ip);
+    return `<span style="color:#8b949e;font-size:10px">Querying AbuseIPDB...</span>`;
+  }
+}
+
+async function fetchOsint(ip) {
+  if (osintCache[ip]) return; // already fetched or fetching
+  osintCache[ip] = 'fetching';
+  try {
+    const res = await fetch(`/api/osint/${ip}`);
+    const data = await res.json();
+    osintCache[ip] = data;
+    // Update any rows currently showing this IP
+    document.querySelectorAll(`.osint-cell[data-ip="${ip}"]`).forEach(el => {
+      el.innerHTML = renderOsint(ip);
+    });
+  } catch(e) {
+    osintCache[ip] = null;
+  }
 }
 
 // ── Export CSV ─────────────────────────────────────────────────────────────
@@ -377,12 +439,56 @@ async function loadPackets(){
         <td>${protoBadge(r.protocol)}</td>
         <td style="color:#c9d1d9">${r.packet_size||''}</td>
       </tr>`).join('');
+    
+    // Update network topology graph
+    updateNetworkGraph(data);
+
     const counts={};
     data.forEach(p=>{if(p.src_ip)counts[p.src_ip]=(counts[p.src_ip]||0)+1});
     const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
     document.getElementById('top-ips').innerHTML=sorted.map(([ip,cnt])=>`
       <div class="ip-row"><span class="ip-addr">${ip}</span><span class="ip-count">${cnt} pkts</span></div>`).join('');
   }catch(e){}
+}
+
+function updateNetworkGraph(packets) {
+  if (!networkNodes) return;
+  const maliciousIPs = new Set(allAlerts.filter(a => a.severity === 'HIGH' || a.severity === 'MEDIUM').map(a => a.src_ip));
+  
+  const nodesMap = new Map();
+  const edgesMap = new Map();
+  
+  packets.forEach(p => {
+    if (!p.src_ip || !p.dst_ip) return;
+    
+    // Process Source Node
+    if (!nodesMap.has(p.src_ip)) {
+      const isMalicious = maliciousIPs.has(p.src_ip);
+      nodesMap.set(p.src_ip, {
+        id: p.src_ip, 
+        label: p.src_ip, 
+        color: { background: isMalicious ? '#f85149' : '#0d2240', border: isMalicious ? '#ff7b72' : '#378add' },
+        size: isMalicious ? 15 : 10
+      });
+    }
+    
+    // Process Dest Node
+    if (!nodesMap.has(p.dst_ip)) {
+      nodesMap.set(p.dst_ip, {
+        id: p.dst_ip, 
+        label: p.dst_ip, 
+        color: { background: '#0d2240', border: '#378add' }
+      });
+    }
+    
+    // Process Edge
+    const edgeId = p.src_ip + '-' + p.dst_ip;
+    edgesMap.set(edgeId, { id: edgeId, from: p.src_ip, to: p.dst_ip });
+  });
+
+  // Sync with vis dataset
+  networkNodes.update(Array.from(nodesMap.values()));
+  networkEdges.update(Array.from(edgesMap.values()));
 }
 
 // ── Protocols ──────────────────────────────────────────────────────────────
@@ -400,16 +506,17 @@ async function loadProtocols(){
   }catch(e){}
 }
 
-function refresh(){
-  loadStats();
-  loadAlerts();
-  loadPackets();
-  loadProtocols();
+async function loop(){
+  if (!network) initNetwork();
+  await loadStats();
+  await loadAlerts();
+  await loadPackets();
+  await loadProtocols();
   updateClock();
 }
 
-refresh();
-setInterval(refresh,5000);
+loop();
+setInterval(loop,5000);
 setInterval(updateClock,1000);
 window.addEventListener('resize',drawChart);
 </script>

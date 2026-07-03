@@ -2,12 +2,29 @@ import time
 import random
 import csv
 import os
+import requests
+import json
 from datetime import datetime
 
 DATA_DIR = "data"
 PACKETS_FILE = os.path.join(DATA_DIR, "packets.csv")
 ALERTS_FILE = os.path.join(DATA_DIR, "alerts.csv")
 SNORT_FILE = os.path.join(DATA_DIR, "snort_alerts.csv")
+
+# SECURE: Get Webhook URL from environment variables for deployment
+SLACK_WEBHOOK = os.environ.get("SLACK_WEBHOOK_URL", None)
+
+def send_slack_alert(ip, port, risk, mitre):
+    if not SLACK_WEBHOOK:
+        return
+    
+    payload = {
+        "text": f"🚨 *CRITICAL THREAT DETECTED* 🚨\n*Source IP:* {ip}\n*Target Port:* {port}\n*Risk Score:* {risk}/100\n*Threat Type:* {mitre}"
+    }
+    try:
+        requests.post(SLACK_WEBHOOK, json=payload, timeout=2)
+    except:
+        pass
 
 def setup_files():
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -51,6 +68,11 @@ def simulate_traffic():
             risk_score = round(random.uniform(75.0, 99.9), 2)
             severity = "HIGH" if risk_score > 90 else "MEDIUM"
             alert = True
+            
+            # Fire Webhook Alert for HIGH severity threats
+            if severity == "HIGH":
+                mitre_tag = "T1110 (Brute Force)" if dst_port == 22 else "T1046 (Service Discovery)" if dst_port in [23, 445, 3389] else "T1059 (Command & Control)" if dst_port in [4444, 31337] else "T1071 (Standard App Layer)"
+                send_slack_alert(src_ip, dst_port, risk_score, mitre_tag)
         else:
             src_ip = generate_random_ip()
             dst_ip = generate_random_ip()

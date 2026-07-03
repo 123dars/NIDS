@@ -73,6 +73,46 @@ def protocol_counts():
     counts = df["protocol"].value_counts().to_dict()
     return jsonify(counts)
 
+@app.route("/api/osint/<ip>")
+def osint(ip):
+    # Highly realistic mock of AbuseIPDB API response
+    # Use the IP address string to deterministically generate a score
+    import hashlib
+    hash_val = int(hashlib.md5(ip.encode()).hexdigest(), 16)
+    
+    # "192.168" or local IPs are clean
+    if ip.startswith("192.") or ip.startswith("10.") or ip.startswith("127."):
+        return jsonify({
+            "ip": ip,
+            "abuseConfidenceScore": 0,
+            "countryCode": "US",
+            "usageType": "Local Network"
+        })
+        
+    # Generate random but consistent threat intel for external IPs
+    score = hash_val % 100
+    
+    # Bias the score so ~80% are clean, 10% suspicious, 10% highly malicious
+    if score < 80:
+        score = 0
+    elif score < 90:
+        score = (score % 40) + 20 # 20-60
+    else:
+        score = (score % 20) + 80 # 80-100
+        
+    countries = ["US", "RU", "CN", "BR", "NL", "DE", "GB", "IR", "KP"]
+    country = countries[hash_val % len(countries)]
+    
+    usage_types = ["Data Center/Web Hosting", "Fixed Line ISP", "Mobile ISP", "Commercial"]
+    usage = usage_types[hash_val % len(usage_types)]
+    
+    return jsonify({
+        "ip": ip,
+        "abuseConfidenceScore": score,
+        "countryCode": country,
+        "usageType": usage
+    })
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"[*] Starting NIDS Dashboard at http://0.0.0.0:{port}")
