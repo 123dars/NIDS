@@ -74,5 +74,6 @@ def protocol_counts():
     return jsonify(counts)
 
 if __name__ == "__main__":
-    print("[*] Starting NIDS Dashboard at http://localhost:5000")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    print(f"[*] Starting NIDS Dashboard at http://0.0.0.0:{port}")
+    app.run(debug=True, host="0.0.0.0", port=port)

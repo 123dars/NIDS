@@ -64,6 +64,21 @@ if __name__ == "__main__":
     elif cmd == "logs":
         parse_snort_logs()
 
+    elif cmd == "demo":
+        # Run simulator and dashboard in parallel threads
+        threads = [
+            threading.Thread(target=lambda: os.system("python3 simulator.py"), daemon=True),
+            threading.Thread(target=run_dashboard, daemon=True),
+        ]
+        for t in threads:
+            t.start()
+        print("\n[*] NIDS Demo Mode running. Press Ctrl+C to stop.\n")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("\n[*] Shutting down NIDS...")
+
     elif cmd == "all":
         # Run all components in parallel threads
         threads = [
