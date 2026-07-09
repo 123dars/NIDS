@@ -98,7 +98,17 @@ canvas{width:100%!important}
 .threat-tag.amber{background:#1a1200;color:#e3b341;border-color:#4a3500}
 
 footer{text-align:center;padding:16px;color:#2a4a6a;font-size:11px;border-top:1px solid #131d2a;letter-spacing:1px}
-</style>
+    .nav-links {
+      display: flex; gap: 15px; margin-right: 20px;
+    }
+    .nav-links a {
+      color: var(--text); text-decoration: none; padding: 8px 16px;
+      border: 1px solid var(--border); border-radius: 4px; transition: all 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: #fff; border-color: var(--highlight); background: rgba(88, 166, 255, 0.1);
+    }
+  </style>
 </head>
 <body>
 
@@ -110,7 +120,13 @@ footer{text-align:center;padding:16px;color:#2a4a6a;font-size:11px;border-top:1p
       <div class="logo-sub">NETWORK INTRUSION DETECTION SYSTEM</div>
     </div>
   </div>
+  <div class="nav-links" style="margin-left: auto; margin-right: 30px;">
+    <a href="/" class="active">Live Dashboard</a>
+    <a href="/analyze">PCAP Analysis</a>
+    <a href="/logout" style="border-color: #f85149; color: #f85149;">Logout</a>
+  </div>
   <div class="header-right">
+    <span style="font-size: 12px; color: #58a6ff; font-weight: bold; background: #0d2240; padding: 4px 10px; border-radius: 4px; border: 1px solid #1e3a5f;" id="throughput-display">0 PPS | 0 PPM</span>
     <span class="clock" id="clock">—</span>
     <div class="live"><div class="live-dot"></div>LIVE</div>
   </div>
@@ -136,7 +152,10 @@ footer{text-align:center;padding:16px;color:#2a4a6a;font-size:11px;border-top:1p
     <div class="panel">
       <div class="sec-title">
         <div class="sec-title-left"><div class="dot" style="background:#f85149"></div>Active alerts</div>
-        <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+        <div>
+          <button class="btn btn-export" onclick="window.open('/api/export_pdf', '_blank')">📄 PDF Report</button>
+          <button class="btn btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
       </div>
 
       <!-- Filter bar -->
@@ -171,6 +190,7 @@ footer{text-align:center;padding:16px;color:#2a4a6a;font-size:11px;border-top:1p
               <th onclick="sortTable('dst_port')">Port ↕</th>
               <th onclick="sortTable('severity')">Severity ↕</th>
               <th onclick="sortTable('risk_score')">Risk Score ↕</th>
+              <th>Threat Actor</th>
             </tr>
           </thead>
           <tbody id="alerts-body">
@@ -269,6 +289,14 @@ function updateClock(){
   document.getElementById('last-update').textContent=n.toLocaleTimeString('en-GB',{hour12:false});
 }
 
+// ── Throughput ─────────────────────────────────────────────────────────────
+async function loadThroughput(){
+  try{
+    const d=await(await fetch('/api/throughput')).json();
+    document.getElementById('throughput-display').textContent=`${d.pps || 0} PPS | ${d.ppm || 0} PPM`;
+  }catch(e){}
+}
+
 // ── Stats ──────────────────────────────────────────────────────────────────
 async function loadStats(){
   try{
@@ -359,6 +387,7 @@ function applyFilters(){
       <td style="color:#c9d1d9">${r.dst_port||'—'}</td>
       <td>${sevBadge(r.severity)}${renderMitre(r.dst_port, r.severity)}</td>
       <td style="color:#e3b341">${r.risk_score||''}</td>
+      <td style="color:#bc8cff">${r.threat_actor||'—'}</td>
     </tr>`).join('');
 }
 
@@ -508,6 +537,7 @@ async function loadProtocols(){
 
 async function loop(){
   if (!network) initNetwork();
+  await loadThroughput();
   await loadStats();
   await loadAlerts();
   await loadPackets();

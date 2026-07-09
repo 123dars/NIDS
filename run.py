@@ -10,7 +10,7 @@ import sys
 
 def run_sniffer(interface="eth0"):
     print(f"[*] Starting sniffer on {interface}...")
-    os.system(f"sudo python3 sniffer/packet_sniffer.py {interface}")
+    os.system(f"python3 sniffer/packet_sniffer.py {interface}")
 
 def run_detector():
     print("[*] Starting anomaly detector (runs every 30 seconds)...")

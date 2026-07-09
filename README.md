@@ -1,46 +1,68 @@
-# 🛡 NIDS — Network Intrusion Detection System
+# 🛡️ Network Intrusion Detection System (NIDS)
 
-A real-time Network Intrusion Detection System built with Python, Scapy, Machine Learning, and Flask.
-Detects suspicious network activity using live packet sniffing, ML-based anomaly detection, and rule-based analysis — all visualized on a live web dashboard.
+An Enterprise-Grade, Machine Learning powered Network Intrusion Detection System built with Python, Docker, and PostgreSQL.
 
-> 📊 Captured and analysed **800+ live packets** | Detected **11 anomalies** | **94%** normal classification rate
-> 🌐 **[View Live Interactive Demo](https://my-nids-portfolio-demo.onrender.com)** (Powered by Simulation Mode)
+This project monitors network traffic in real-time, extracts features from raw packets, and uses an **Isolation Forest Machine Learning model** to detect anomalous and potentially malicious network activity. It includes OSINT threat-intelligence correlation, forensic PCAP analysis, and a real-time web dashboard.
 
-<img width="1919" height="745" alt="image" src="https://github.com/user-attachments/assets/9e7c5378-7fc7-4ba8-9df5-c8a40729878e" />
-
-
----
-
-## ⚡ Features
-
-- 📡 **Live Packet Capture** — Real-time network traffic capture using Scapy
-- 🤖 **ML Anomaly Detection** — Isolation Forest algorithm flags suspicious packets automatically
-- 🌍 **Real-Time OSINT Threat Intel** — Enriches IP addresses with AbuseIPDB mock scores & GeoIP mapping
-- 🕸 **Live Network Topology Graph** — Interactive 2D visualization of network traffic and malicious nodes
-- 🛡 **MITRE ATT&CK Mapping** — Correlates port anomalies with industry-standard T-Codes (e.g. T1110)
-- 🚨 **Automated SecOps Alerts** — Webhook integration for real-time Slack/Teams incident notifications
-- ☁ **Cloud Simulation Mode** — Bypass raw-socket restrictions to deploy NIDS as an interactive web demo
-- 📊 **Live Dashboard** — Flask web dashboard with auto-refresh every 5 seconds
-- 🔎 **Filter & Search** — Filter alerts by IP, protocol, and severity in real time
-- ⬇ **Export CSV** — One-click download of all alerts
-- 📈 **Packet Rate Graph** — Live chart showing network activity over last 60 seconds
-- 🚨 **Severity Classification** — HIGH / MEDIUM / LOW / NORMAL risk scoring (0–100)
-- 🔗 **Snort & Suricata Integration** — Deep packet inspection with signature-based rules
-- 📦 **ELK Stack Ready** — Push logs to Elasticsearch + Kibana for enterprise monitoring
+![NIDS Dashboard](https://img.shields.io/badge/Status-Active-success)
+![Python](https://img.shields.io/badge/Python-3.9-blue)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791)
+![Machine Learning](https://img.shields.io/badge/Scikit--Learn-Isolation%20Forest-orange)
 
 ---
 
-## 🛠 Tech Stack
+## 🌟 Key Features
 
-| Component | Technology |
-|-----------|-----------|
-| Packet Capture | Python, Scapy |
-| Anomaly Detection | Scikit-learn (Isolation Forest) |
-| Rule-based Detection | Python |
-| Log Analysis | Snort, Suricata |
-| Web Dashboard | Flask, HTML, CSS, JavaScript |
-| Data Processing | Pandas, NumPy |
-| Visualization | ELK Stack (Elasticsearch + Kibana) |
+1. **Real-time Packet Sniffing**: Uses `Scapy` to intercept live network traffic on your interface, extracting vital packet metadata (Ports, Flags, Protocols).
+2. **Machine Learning Anomaly Detection**: An offline-trained Isolation Forest model scores each packet for anomalies, tagging deviations from standard network baselines as suspicious.
+3. **OSINT Threat Intelligence**: Correlates anomalous IPs with deterministic, simulated threat actors (e.g., Lazarus Group, APT29) and geolocates the source.
+4. **Forensic PCAP Analysis**: Drag-and-drop historic `.pcap` files into the web portal to run forensic ML analysis on past network captures.
+5. **Real-time Web Dashboard**: A Flask-powered, authenticated portal displaying live network topology, protocol distribution, and high-risk alerts.
+6. **Enterprise PDF Reporting**: Generate cleanly formatted Executive Threat Reports summarizing high-risk incidents.
+
+---
+
+## 🏗️ Architecture
+
+The system is designed with a microservices architecture, fully containerized using `docker-compose`:
+
+- **Sniffer Container** (`network_mode: host`): Listens directly on the host's network interfaces and writes raw packet data to the central database.
+- **Detector Container**: A background daemon that polls the database, runs the ML inference pipeline, enriches alerts with Threat Intel, and writes risk scores back to the DB.
+- **Web Dashboard**: A secure Flask application that serves the real-time UI and API endpoints.
+- **PostgreSQL Database**: The central nervous system storing millions of packets efficiently, resolving file-locking issues found in traditional CSV-based prototypes.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Docker** & **Docker Compose** installed on your system.
+- Ensure ports `5000` (Flask) and `5432` (Postgres) are free.
+
+### 1. Build and Run the System
+Navigate to the project directory and build the Docker containers:
+
+```bash
+docker-compose up --build
+```
+
+*Note: The system will automatically train the ML model and initialize the database on first boot.*
+
+### 2. Access the Dashboard
+Open your web browser and navigate to:
+**http://localhost:5000**
+
+- **Default Username:** `admin`
+- **Default Password:** `password123`
+
+### 3. Simulate an Attack (Demo Mode)
+Want to see the system in action without waiting for a real cyber attack? Run the included traffic simulator to inject dummy traffic and simulated Advanced Persistent Threats (APTs) into the network:
+
+```bash
+docker-compose exec dashboard python simulator.py
+```
+*Watch your live dashboard light up with real-time Threat Intelligence and MITRE ATT&CK tags!*
 
 ---
 
@@ -48,139 +70,30 @@ Detects suspicious network activity using live packet sniffing, ML-based anomaly
 
 ```
 NIDS/
-├── sniffer/
-│   ├── packet_sniffer.py     # Live packet capture using Scapy
-│   └── log_parser.py         # Parse Snort & Suricata alert logs
-├── ml/
-│   └── anomaly_detector.py   # Isolation Forest ML anomaly detection
-├── dashboard/
-│   ├── app.py                # Flask backend API
-│   └── templates/
-│       └── index.html        # Live monitoring dashboard
-├── data/                     # Auto-created: CSV logs & alerts
-├── logs/                     # Snort/Suricata raw logs
-├── run.py                    # Main entry point
-├── requirements.txt
-└── README.md
+│
+├── dashboard/               # Web Application
+│   ├── app.py               # Flask backend & API routes
+│   └── templates/           # UI (HTML/CSS/JS)
+│
+├── database/                # Database Layer
+│   └── models.py            # SQLAlchemy schemas (User, Packet)
+│
+├── ml/                      # Machine Learning Engine
+│   ├── anomaly_detector.py  # Inference script
+│   ├── train_model.py       # Training pipeline
+│   └── pcap_analyzer.py     # Forensic PCAP analysis module
+│
+├── sniffer/                 # Network Capture
+│   └── packet_sniffer.py    # Live Scapy packet capture
+│
+├── simulator.py             # Fake traffic generator for demos
+├── docker-compose.yml       # Microservices orchestration
+└── Dockerfile               # Base image definition
 ```
 
 ---
 
-## ⚙️ Installation
+## 🤝 Disclaimer
+This tool is built for educational and portfolio demonstration purposes. Do not use this as a standalone security appliance in a production corporate network without integrating it with enterprise firewalls and proper alert orchestration tools (like Splunk or Elastic SIEM).
 
-### Step 1 — Clone the repository
-```bash
-git clone https://github.com/123dars/NIDS.git
-cd NIDS
-```
-
-### Step 2 — Create virtual environment
-```bash
-python3 -m venv nids-env
-source nids-env/bin/activate
-```
-
-### Step 3 — Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### Step 4 — Install Snort & Suricata (optional, for deep inspection)
-```bash
-sudo apt update
-sudo apt install snort suricata -y
-```
-
-### Step 5 — Find your network interface
-```bash
-ip a
-# Look for eth0, wlan0, or ens33
-```
-
----
-
-## 🚀 Quick Start — Single Command
-
-```bash
-sudo nids-env/bin/python3 run.py all eth0
-```
-
-This runs everything together — sniffer, anomaly detector (every 15 seconds), and dashboard all at once.
-
-Open browser → **http://localhost:5000**
-
-Browse any website to generate live traffic and watch the dashboard update automatically!
-
-### Run components individually (optional)
-
-```bash
-# Capture packets only
-sudo nids-env/bin/python3 run.py sniff eth0
-
-# Run anomaly detection only
-nids-env/bin/python3 run.py detect
-
-# Start dashboard only
-nids-env/bin/python3 run.py dashboard
-
-# Parse Snort/Suricata logs
-nids-env/bin/python3 run.py logs
-```
-
----
-
-## 📊 Dashboard Features
-
-| Feature | Description |
-|---------|-------------|
-| Total Packets | Live count of all captured packets |
-| Risk Cards | HIGH / MEDIUM / LOW / NORMAL breakdown |
-| Packet Rate Graph | Live chart of packets per second (last 60s) |
-| Active Alerts | Filterable table of suspicious packets with risk scores |
-| OSINT Intel | Real-time Abuse Confidence Scores & Country Code mapping |
-| MITRE ATT&CK | Maps triggered rules to MITRE Threat Tactics |
-| Network Graph | Interactive 2D vis-network topology of traffic |
-| Protocol Breakdown | TCP / UDP / ICMP / Other percentage bars |
-| Top Source IPs | Most active IP addresses on your network |
-| Export CSV | Download all alerts as a CSV file with one click |
-| System Status | Sniffer, ML model, and interface status |
-
----
-
-## 🧠 How Anomaly Detection Works
-
-1. **Packet Sniffer** captures live traffic and saves to CSV
-2. **Feature Extraction** — protocol, ports, packet size are extracted
-3. **Isolation Forest** model trained on captured data
-4. Packets with anomaly score > threshold are flagged
-5. **Rule-based checks** add flags for known suspicious ports
-6. **Risk score** (0–100) calculated for each flagged packet
-7. All results visible on live dashboard with auto-refresh
-
----
-
-## 🔒 Suspicious Ports Monitored
-
-| Port | Service | Risk |
-|------|---------|------|
-| 22 | SSH | Brute force attempts |
-| 23 | Telnet | Unencrypted access |
-| 445 | SMB | Ransomware / WannaCry |
-| 3389 | RDP | Remote access attacks |
-| 4444 | Metasploit | Common exploit payload |
-| 31337 | Back Orifice | Legacy trojan |
-
----
-
-## 👨‍💻 Author
-
-**Darshan B**
-- GitHub: [github.com/123dars](https://github.com/123dars)
-- LinkedIn: [linkedin.com/in/darshan-vishwakarma](https://linkedin.com/in/darshan-vishwakarma)
-- Email: darshanvishwakarma092@gmail.com
-
----
-
-## 📄 License
-
-MIT License — feel free to use and modify for educational purposes.
+**Developed by Darshan B.**

@@ -1,0 +1,51 @@
+
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: nids_user
+      POSTGRES_PASSWORD: nids_password
+      POSTGRES_DB: nids_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+  sniffer:
+    build: .
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: ["python", "run.py", "sniff"]
+    volumes:
+      - ./data:/app/data
+      - ./ml:/app/ml
+    restart: unless-stopped
+
+  detector:
+    build: .
+    command: ["sh", "-c", "if [ ! -f /app/ml/nids_model.pkl ]; then python ml/train_model.py; fi; while true; do python ml/anomaly_detector.py; sleep 30; done"]
+    environment:
+      - DB_HOST=db
+    volumes:
+      - ./data:/app/data
+      - ./ml:/app/ml
+    depends_on:
+      - sniffer
+      - db
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    command: ["python", "run.py", "dashboard"]
+    environment:
+      - DB_HOST=db
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - db
+    restart: unless-stopped

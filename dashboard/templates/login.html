@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIDS Admin Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #050b14;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #4a9eff;
+        }
+        .login-box {
+            background: #0d1b2a;
+            padding: 40px;
+            border-radius: 10px;
+            border: 1px solid #1c3d5a;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            text-align: center;
+            width: 350px;
+        }
+        .login-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #050b14;
+            border: 1px solid #1c3d5a;
+            color: #00ffcc;
+            font-family: 'Share Tech Mono', monospace;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00ffcc;
+            box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: #1c3d5a;
+            color: #00ffcc;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #00ffcc;
+            color: #050b14;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+        }
+        .flash {
+            color: #ff3333;
+            margin-bottom: 15px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>NIDS Secure Portal</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Authenticate</button>
+    </form>
+</div>
+
+</body>
+</html>
