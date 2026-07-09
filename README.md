@@ -98,4 +98,10 @@ NIDS/
 ## 🤝 Disclaimer
 This tool is built for educational and portfolio demonstration purposes. Do not use this as a standalone security appliance in a production corporate network without integrating it with enterprise firewalls and proper alert orchestration tools (like Splunk or Elastic SIEM).
 
+## 📝 License
+
+This project is licensed under the **MIT License**. You are free to use, modify, and distribute this software for educational or commercial purposes. See the `LICENSE` file for more details.
+
+---
+
 **Developed by Darshan B.**
