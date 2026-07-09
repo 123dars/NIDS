@@ -2,6 +2,8 @@
 
 An Enterprise-Grade, Machine Learning powered Network Intrusion Detection System built with Python, Docker, and PostgreSQL.
 
+**🟢 Live Demo:** [https://nids-fggf.onrender.com](https://nids-fggf.onrender.com) *(Login: admin / password123)*
+
 This project monitors network traffic in real-time, extracts features from raw packets, and uses an **Isolation Forest Machine Learning model** to detect anomalous and potentially malicious network activity. It includes OSINT threat-intelligence correlation, forensic PCAP analysis, and a real-time web dashboard.
 
 ![NIDS Dashboard](https://img.shields.io/badge/Status-Active-success)
